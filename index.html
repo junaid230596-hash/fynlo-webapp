@@ -7,6 +7,15 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
 <!-- Razorpay Payment Gateway -->
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#4f46e5">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Fynlo">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='32' fill='%234f46e5'/><text x='96' y='130' font-size='100' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold'>F</text></svg>">
 <style>
 :root {
   --primary: #4f46e5;
@@ -581,7 +590,7 @@ tr:hover td { background: #f8fafc; }
   .role-card { padding: 12px 8px; }
   .role-card .role-icon { font-size: 22px; }
   .main-content { padding: 12px; }
-
+}
 /* ═══════════════════════════════════════
    CHAT SYSTEM
 ═══════════════════════════════════════ */
@@ -810,7 +819,7 @@ tr:hover td { background: #f8fafc; }
   .chat-page { flex-direction: column; height: auto; min-height: calc(100dvh - 120px); border-radius: 12px; }
   .chat-page-sidebar { width: 100%; max-height: 280px; border-right: none; border-bottom: 1px solid var(--border); }
   .chat-page-main { min-height: 400px; }
-
+}
 
 @keyframes spin { to { transform: rotate(360deg); } }
 /* ── PRICING MOBILE FIX ── */
@@ -835,6 +844,27 @@ tr:hover td { background: #f8fafc; }
 /* ── GST BADGE ── */
 .gst-verified { display:inline-flex;align-items:center;gap:4px;background:#d1fae5;color:#065f46;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700; }
 .gst-invalid  { display:inline-flex;align-items:center;gap:4px;background:#fee2e2;color:#991b1b;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700; }
+
+/* ── PWA INSTALL PROMPT ── */
+.pwa-install-bar {
+  position: fixed; bottom: calc(72px + env(safe-area-inset-bottom,0px)); left: 50%;
+  transform: translateX(-50%); z-index: 600;
+  background: linear-gradient(135deg,#1e1b4b,#4f46e5);
+  color: white; border-radius: 16px; padding: 14px 20px;
+  display: none; align-items: center; gap: 14px;
+  box-shadow: 0 8px 32px rgba(79,70,229,0.4);
+  width: calc(100% - 32px); max-width: 420px;
+  animation: slideUpBar 0.4s ease;
+}
+.pwa-install-bar.show { display: flex; }
+@keyframes slideUpBar { from { transform:translateX(-50%) translateY(80px);opacity:0; } to { transform:translateX(-50%) translateY(0);opacity:1; } }
+.pwa-install-icon { font-size:28px;flex-shrink:0; }
+.pwa-install-text { flex:1; }
+.pwa-install-title { font-weight:800;font-size:14px; }
+.pwa-install-sub { font-size:11px;opacity:0.8;margin-top:2px; }
+.pwa-install-btn { background:white;color:#4f46e5;border:none;border-radius:10px;padding:8px 16px;font-weight:800;font-size:13px;cursor:pointer;flex-shrink:0;font-family:var(--sans); }
+.pwa-dismiss-btn { background:none;border:none;color:white;opacity:0.7;cursor:pointer;font-size:20px;padding:0 4px;flex-shrink:0; }
+@media (min-width:769px) { .pwa-install-bar { bottom:24px; } }
 </style>
 </head>
 <body>
@@ -1300,7 +1330,7 @@ tr:hover td { background: #f8fafc; }
 
 const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
   ? 'http://localhost:3000/api'
-  : 'https://fynlo-production-3664.up.railway.app/api'; // ← REPLACE THIS with your Railway URL
+  : 'https://YOUR-RAILWAY-URL.up.railway.app/api'; // ← REPLACE THIS with your Railway URL
 
 // ─── RAZORPAY KEY ─────────────────────────────────────────
 const RAZORPAY_KEY_ID = 'rzp_test_XXXXXXXXXXXXXXXX'; // ← REPLACE with your Razorpay Key ID
@@ -1374,7 +1404,7 @@ const state = {
 
 // ─── ADMIN SECRET CODE ───────────────────────────────────
 // Change this to your own secret code — keep it private!
-const ADMIN_SECRET_CODE = 'fynlo_admin_secret_MJ';
+const ADMIN_SECRET_CODE = 'fynlo-admin-2024-secret';
 
 // ─── AUTH TAB SWITCHER ────────────────────────────────────
 function setAuthTab(tab) {
@@ -1828,7 +1858,7 @@ async function renderPage(page) {
       }
     } else {
       switch (page) {
-        case 'dashboard':
+        case 'dashboard': {
           const [products, invoices, employees, dashStats] = await Promise.all([
             GET('/products').catch(() => []),
             GET('/invoices').catch(() => []),
@@ -1840,35 +1870,35 @@ async function renderPage(page) {
           state.cache.employees = employees || [];
           state.cache.dashStats = dashStats || {};
           await renderShopDashboard(); break;
-
-        case 'inventory':
+        }
+        case 'inventory': {
           state.cache.products = await GET('/products').catch(() => []);
           await renderInventory(); break;
-
-        case 'invoices':
+        }
+        case 'invoices': {
           const [invs, prods] = await Promise.all([
             GET('/invoices').catch(() => []),
             GET('/products').catch(() => []),
           ]);
-          state.cache.invoices = invs   || [];
-          state.cache.products = prods  || [];
+          state.cache.invoices = invs  || [];
+          state.cache.products = prods || [];
           await renderInvoices(); break;
-
-        case 'employees':
+        }
+        case 'employees': {
           state.cache.employees = await GET('/employees').catch(() => []);
           await renderEmployees(); break;
-
-        case 'attendance':
+        }
+        case 'attendance': {
           await renderAttendance(); break;
-
-        case 'payroll':
+        }
+        case 'payroll': {
           const month = new Date().toISOString().slice(0, 7);
           state.cache.payroll = await GET(`/payroll?month=${month}`).catch(() => []);
           await renderPayroll(); break;
-
-        case 'profile':
+        }
+        case 'profile': {
           await renderShopProfile(); break;
-
+        }
         default:
           await renderShopDashboard();
       }
@@ -6836,6 +6866,73 @@ function filterConvs(query) {
 
 <!-- CHAT WINDOW -->
 <div class="chat-window" id="chat-window"></div>
+
+<!-- PWA INSTALL BAR -->
+<div class="pwa-install-bar" id="pwa-install-bar">
+  <div class="pwa-install-icon">📱</div>
+  <div class="pwa-install-text">
+    <div class="pwa-install-title">Install Fynlo App</div>
+    <div class="pwa-install-sub">Add to home screen · Works offline</div>
+  </div>
+  <button class="pwa-install-btn" onclick="installPWA()">Install</button>
+  <button class="pwa-dismiss-btn" onclick="dismissPWA()">✕</button>
+</div>
+
+<script>
+// ── PWA SERVICE WORKER ──────────────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js')
+      .then(reg => console.log('✅ SW registered:', reg.scope))
+      .catch(err => console.log('SW error:', err));
+  });
+}
+
+// ── PWA INSTALL PROMPT ──────────────────────────────────
+let deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Show install bar after 3 seconds
+  setTimeout(() => {
+    const bar = document.getElementById('pwa-install-bar');
+    if (bar && !localStorage.getItem('pwa-dismissed')) {
+      bar.classList.add('show');
+    }
+  }, 3000);
+});
+
+async function installPWA() {
+  const bar = document.getElementById('pwa-install-bar');
+  if (!deferredPrompt) {
+    // iOS fallback
+    alert('To install Fynlo:\n\n📱 iPhone/iPad: Tap Share → "Add to Home Screen"\n🤖 Android: Tap Menu → "Add to Home Screen"');
+    if (bar) bar.classList.remove('show');
+    return;
+  }
+  deferredPrompt.prompt();
+  const result = await deferredPrompt.userChoice;
+  if (result.outcome === 'accepted') {
+    console.log('PWA installed');
+    if (typeof showToast === 'function') showToast('Fynlo installed! 🎉', 'success');
+  }
+  deferredPrompt = null;
+  if (bar) bar.classList.remove('show');
+}
+
+function dismissPWA() {
+  const bar = document.getElementById('pwa-install-bar');
+  if (bar) bar.classList.remove('show');
+  localStorage.setItem('pwa-dismissed', '1');
+}
+
+window.addEventListener('appinstalled', () => {
+  const bar = document.getElementById('pwa-install-bar');
+  if (bar) bar.classList.remove('show');
+  deferredPrompt = null;
+});
+</script>
 
 </body>
 </html>
