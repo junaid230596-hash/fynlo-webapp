@@ -1434,6 +1434,8 @@ function loginSuccess(user) {
   state.currentUser = user;
   document.getElementById('auth-root').style.display = 'none';
   document.getElementById('app-root').classList.add('active');
+  getComputedStyle(document.getElementById('app-root')).display;
+  getComputedStyle(document.getElementById('app-root')).visibility;
   buildNav();
   switchPage('dashboard');
   showToast(`Welcome, ${user.name}! 👋`, 'success');
