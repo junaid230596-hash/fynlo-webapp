@@ -590,7 +590,7 @@ tr:hover td { background: #f8fafc; }
   .role-card { padding: 12px 8px; }
   .role-card .role-icon { font-size: 22px; }
   .main-content { padding: 12px; }
-
+}
 /* ═══════════════════════════════════════
    CHAT SYSTEM
 ═══════════════════════════════════════ */
@@ -819,7 +819,7 @@ tr:hover td { background: #f8fafc; }
   .chat-page { flex-direction: column; height: auto; min-height: calc(100dvh - 120px); border-radius: 12px; }
   .chat-page-sidebar { width: 100%; max-height: 280px; border-right: none; border-bottom: 1px solid var(--border); }
   .chat-page-main { min-height: 400px; }
-
+}
 
 @keyframes spin { to { transform: rotate(360deg); } }
 /* ── PRICING MOBILE FIX ── */
@@ -1330,18 +1330,40 @@ tr:hover td { background: #f8fafc; }
 
 const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
   ? 'http://localhost:3000/api'
-  : 'https://fynlo-production-3664.up.railway.app/api'; // ← REPLACE THIS with your Railway URL
+  : 'https://fynlo-production-3664.up.railway.app/api';
 
 // ─── RAZORPAY KEY ─────────────────────────────────────────
 const RAZORPAY_KEY_ID = 'rzp_test_XXXXXXXXXXXXXXXX'; // ← REPLACE with your Razorpay Key ID
 
-// ─── TOKEN STORAGE ────────────────────────────────────────
+// ─── TOKEN STORAGE (with in-memory fallback if localStorage blocked) ──
+let _memToken = null;
+let _memUser  = null;
 const Auth = {
-  getToken : ()  => localStorage.getItem('fynlo_token'),
-  setToken : (t) => localStorage.setItem('fynlo_token', t),
-  getUser  : ()  => { try { return JSON.parse(localStorage.getItem('fynlo_user')); } catch { return null; } },
-  setUser  : (u) => localStorage.setItem('fynlo_user', JSON.stringify(u)),
-  clear    : ()  => { localStorage.removeItem('fynlo_token'); localStorage.removeItem('fynlo_user'); },
+  getToken : () => {
+    try { return localStorage.getItem('fynlo_token') || _memToken; }
+    catch { return _memToken; }
+  },
+  setToken : (t) => {
+    _memToken = t;
+    try { localStorage.setItem('fynlo_token', t); }
+    catch(e) { console.warn('localStorage blocked, using memory fallback'); }
+  },
+  getUser  : () => {
+    try {
+      const stored = localStorage.getItem('fynlo_user');
+      return stored ? JSON.parse(stored) : _memUser;
+    } catch { return _memUser; }
+  },
+  setUser  : (u) => {
+    _memUser = u;
+    try { localStorage.setItem('fynlo_user', JSON.stringify(u)); }
+    catch(e) { console.warn('localStorage blocked, using memory fallback'); }
+  },
+  clear    : () => {
+    _memToken = null; _memUser = null;
+    try { localStorage.removeItem('fynlo_token'); localStorage.removeItem('fynlo_user'); }
+    catch(e) {}
+  },
 };
 
 // ─── HTTP HELPERS ─────────────────────────────────────────
@@ -1353,12 +1375,6 @@ const DEL   = (url)       => api(url, { method: 'DELETE' });
 
 // ─── BASE FETCH WRAPPER ───────────────────────────────────
 async function api(endpoint, options = {}) {
-  // Check if URL is still placeholder
-  if (API_BASE_URL.includes('YOUR-RAILWAY-URL')) {
-    showToast('⚠️ Please set your Railway URL in saas.html', 'error');
-    throw new Error('Railway URL not configured');
-  }
-
   const token = Auth.getToken();
   try {
     const res = await fetch(API_BASE_URL + endpoint, {
@@ -1434,8 +1450,6 @@ function loginSuccess(user) {
   state.currentUser = user;
   document.getElementById('auth-root').style.display = 'none';
   document.getElementById('app-root').classList.add('active');
-  getComputedStyle(document.getElementById('app-root')).display;
-  getComputedStyle(document.getElementById('app-root')).visibility;
   buildNav();
   switchPage('dashboard');
   showToast(`Welcome, ${user.name}! 👋`, 'success');
@@ -1509,13 +1523,29 @@ async function handleLogin() {
       email,
       password: pass,
     });
-    if (!data) return;
+
+    // DEBUG — remove these console.logs once confirmed working
+    console.log('Login response:', data);
+    console.log('Token received:', data?.token ? 'YES (' + data.token.slice(0,20) + '...)' : 'NO TOKEN');
+
+    if (!data) {
+      showToast('No response from server — check console (F12)', 'error');
+      return;
+    }
+    if (!data.token) {
+      showToast('Server did not return a login token. Check backend logs.', 'error');
+      console.error('Full response without token:', JSON.stringify(data));
+      return;
+    }
+    if (!data.user) {
+      showToast('Server did not return user data.', 'error');
+      return;
+    }
 
     // If returned user is admin — require secret code
     if (data.user.role === 'admin') {
       if (!secretCode) {
         showToast('Admin accounts require the secret code. Click "Admin access" below.', 'error');
-        // Show the secret code row
         document.getElementById('admin-secret-row')?.classList.remove('hidden');
         return;
       }
@@ -1527,8 +1557,13 @@ async function handleLogin() {
 
     Auth.setToken(data.token);
     Auth.setUser(data.user);
+
+    // DEBUG — verify token was actually saved
+    console.log('Token saved to localStorage:', Auth.getToken() ? 'YES' : 'FAILED TO SAVE');
+
     loginSuccess(data.user);
   } catch (err) {
+    console.error('Login error:', err);
     showToast(err.message || 'Login failed', 'error');
   } finally {
     if (btn) { btn.textContent = 'Sign In →'; btn.disabled = false; }
