@@ -590,7 +590,7 @@ tr:hover td { background: #f8fafc; }
   .role-card { padding: 12px 8px; }
   .role-card .role-icon { font-size: 22px; }
   .main-content { padding: 12px; }
-
+}
 /* ═══════════════════════════════════════
    CHAT SYSTEM
 ═══════════════════════════════════════ */
@@ -819,7 +819,7 @@ tr:hover td { background: #f8fafc; }
   .chat-page { flex-direction: column; height: auto; min-height: calc(100dvh - 120px); border-radius: 12px; }
   .chat-page-sidebar { width: 100%; max-height: 280px; border-right: none; border-bottom: 1px solid var(--border); }
   .chat-page-main { min-height: 400px; }
-
+}
 
 @keyframes spin { to { transform: rotate(360deg); } }
 /* ── PRICING MOBILE FIX ── */
@@ -1751,19 +1751,12 @@ function buildNav() {
 
 function switchPage(page) {
   state.currentPage = page;
-  document.querySelectorAll('.topbar-nav-link').forEach(l => l.classList.remove('active'));
-  document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
-  document.querySelectorAll('.bottom-nav-item').forEach(l => l.classList.remove('active'));
-  document.querySelectorAll('.drawer-link').forEach(l => l.classList.remove('active'));
+  document.querySelectorAll('.topbar-nav-link,.sidebar-link,.bottom-nav-item,.drawer-link').forEach(l => l.classList.remove('active'));
 
-  const tnl = document.getElementById('tnl-' + page);
-  const snl = document.getElementById('snl-' + page);
-  const bnl = document.getElementById('bnl-' + page);
-  const dnl = document.getElementById('dnl-' + page);
-  if (tnl) tnl.classList.add('active');
-  if (snl) snl.classList.add('active');
-  if (bnl) bnl.classList.add('active');
-  if (dnl) dnl.classList.add('active');
+  ['tnl','snl','bnl','dnl'].forEach(prefix => {
+    const el = document.getElementById(`${prefix}-${page}`);
+    if (el) el.classList.add('active');
+  });
 
   // Mobile page title
   const labels = {
@@ -1779,12 +1772,24 @@ function switchPage(page) {
   const mpt = document.getElementById('mobile-page-title');
   if (mpt) mpt.textContent = labels[page] || '';
 
-  // Scroll to top on page change (mobile)
+  // Scroll to top
+  window.scrollTo(0,0);
   const mc = document.getElementById('page-content');
   if (mc) mc.scrollTop = 0;
-  window.scrollTo(0, 0);
 
-  renderPage(page);
+  // Render the page — catch ALL errors so nothing is swallowed
+  renderPage(page).catch(err => {
+    console.error('renderPage crashed:', err);
+    const el = document.getElementById('page-content');
+    if (el) el.innerHTML = `
+      <div style="text-align:center;padding:60px 20px;">
+        <div style="font-size:48px;margin-bottom:16px;">⚠️</div>
+        <div style="font-size:16px;font-weight:700;color:var(--danger);margin-bottom:8px;">Page failed to load</div>
+        <div style="font-size:13px;color:var(--text-3);margin-bottom:4px;">${err.message}</div>
+        <div style="font-size:12px;color:var(--text-3);margin-bottom:20px;">Open browser console (F12) for details</div>
+        <button class="btn btn-primary btn-sm" onclick="switchPage('${page}')">Try Again</button>
+      </div>`;
+  });
 }
 
 // ════════════════════════════════════════════════════════════
@@ -1803,7 +1808,8 @@ function showPageLoader() {
 async function renderPage(page) {
   const u  = state.currentUser;
   const el = document.getElementById('page-content');
-  if (!u || !el) return;
+  if (!u)  { console.warn('renderPage: no currentUser'); return; }
+  if (!el) { console.warn('renderPage: no page-content element'); return; }
 
   // Pages that need no data fetch
   if (page === 'chat')         { el.innerHTML = renderChatPage(); return; }
