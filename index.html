@@ -1447,13 +1447,37 @@ function setAuthTab(tab) {
 
 // ─── LOGIN SUCCESS ────────────────────────────────────────
 function loginSuccess(user) {
+  console.log('1. loginSuccess called with user:', user);
   state.currentUser = user;
-  document.getElementById('auth-root').style.display = 'none';
-  document.getElementById('app-root').classList.add('active');
-  buildNav();
-  switchPage('dashboard');
+
+  const authRoot = document.getElementById('auth-root');
+  const appRoot   = document.getElementById('app-root');
+  console.log('2. auth-root found:', !!authRoot, '| app-root found:', !!appRoot);
+
+  if (authRoot) authRoot.style.display = 'none';
+  if (appRoot)  appRoot.classList.add('active');
+  console.log('3. app-root classes after adding active:', appRoot?.className);
+
+  try {
+    buildNav();
+    console.log('4. buildNav() completed successfully');
+  } catch(e) {
+    console.error('4. buildNav() CRASHED:', e);
+    showToast('Navigation failed to build: ' + e.message, 'error');
+  }
+
+  try {
+    switchPage('dashboard');
+    console.log('5. switchPage(dashboard) called successfully');
+  } catch(e) {
+    console.error('5. switchPage() CRASHED:', e);
+    showToast('Page switch failed: ' + e.message, 'error');
+  }
+
   showToast(`Welcome, ${user.name}! 👋`, 'success');
-  setTimeout(() => { initChat(); }, 400);
+  setTimeout(() => {
+    try { initChat(); } catch(e) { console.error('initChat crashed (non-critical):', e); }
+  }, 400);
 }
 
 // ─── LOGOUT ──────────────────────────────────────────────
@@ -1815,8 +1839,11 @@ function switchPage(page) {
   if (mc) mc.scrollTop = 0;
 
   // Render the page — catch ALL errors so nothing is swallowed
-  renderPage(page).catch(err => {
-    console.error('renderPage crashed:', err);
+  console.log('6. About to call renderPage for:', page);
+  renderPage(page).then(() => {
+    console.log('7. renderPage(' + page + ') resolved successfully');
+  }).catch(err => {
+    console.error('7. renderPage(' + page + ') REJECTED:', err);
     const el = document.getElementById('page-content');
     if (el) el.innerHTML = `
       <div style="text-align:center;padding:60px 20px;">
@@ -6249,7 +6276,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const authRoot = document.getElementById('auth-root');
     const appRoot  = document.getElementById('app-root');
     if (authRoot) { authRoot.style.display = 'grid'; authRoot.style.visibility = 'visible'; }
-    if (appRoot)  { appRoot.style.display  = 'none'; appRoot.classList.remove('active') }
+    if (appRoot)  { appRoot.style.display  = 'none'; appRoot.classList.add('active') }
 
     // Warn if Railway URL not set
     if (API_BASE_URL.includes('YOUR-RAILWAY-URL')) {
