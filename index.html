@@ -590,7 +590,7 @@ tr:hover td { background: #f8fafc; }
   .role-card { padding: 12px 8px; }
   .role-card .role-icon { font-size: 22px; }
   .main-content { padding: 12px; }
-}
+
 /* ═══════════════════════════════════════
    CHAT SYSTEM
 ═══════════════════════════════════════ */
@@ -819,7 +819,7 @@ tr:hover td { background: #f8fafc; }
   .chat-page { flex-direction: column; height: auto; min-height: calc(100dvh - 120px); border-radius: 12px; }
   .chat-page-sidebar { width: 100%; max-height: 280px; border-right: none; border-bottom: 1px solid var(--border); }
   .chat-page-main { min-height: 400px; }
-}
+
 
 @keyframes spin { to { transform: rotate(360deg); } }
 /* ── PRICING MOBILE FIX ── */
@@ -1447,37 +1447,13 @@ function setAuthTab(tab) {
 
 // ─── LOGIN SUCCESS ────────────────────────────────────────
 function loginSuccess(user) {
-  console.log('1. loginSuccess called with user:', user);
   state.currentUser = user;
-
-  const authRoot = document.getElementById('auth-root');
-  const appRoot   = document.getElementById('app-root');
-  console.log('2. auth-root found:', !!authRoot, '| app-root found:', !!appRoot);
-
-  if (authRoot) authRoot.style.display = 'none';
-  if (appRoot)  appRoot.classList.add('active');
-  console.log('3. app-root classes after adding active:', appRoot?.className);
-
-  try {
-    buildNav();
-    console.log('4. buildNav() completed successfully');
-  } catch(e) {
-    console.error('4. buildNav() CRASHED:', e);
-    showToast('Navigation failed to build: ' + e.message, 'error');
-  }
-
-  try {
-    switchPage('dashboard');
-    console.log('5. switchPage(dashboard) called successfully');
-  } catch(e) {
-    console.error('5. switchPage() CRASHED:', e);
-    showToast('Page switch failed: ' + e.message, 'error');
-  }
-
+  document.getElementById('auth-root').style.display = 'none';
+  document.getElementById('app-root').classList.add('active');
+  buildNav();
+  switchPage('dashboard');
   showToast(`Welcome, ${user.name}! 👋`, 'success');
-  setTimeout(() => {
-    try { initChat(); } catch(e) { console.error('initChat crashed (non-critical):', e); }
-  }, 400);
+  setTimeout(() => { initChat(); }, 400);
 }
 
 // ─── LOGOUT ──────────────────────────────────────────────
@@ -1839,11 +1815,8 @@ function switchPage(page) {
   if (mc) mc.scrollTop = 0;
 
   // Render the page — catch ALL errors so nothing is swallowed
-  console.log('6. About to call renderPage for:', page);
-  renderPage(page).then(() => {
-    console.log('7. renderPage(' + page + ') resolved successfully');
-  }).catch(err => {
-    console.error('7. renderPage(' + page + ') REJECTED:', err);
+  renderPage(page).catch(err => {
+    console.error('renderPage crashed:', err);
     const el = document.getElementById('page-content');
     if (el) el.innerHTML = `
       <div style="text-align:center;padding:60px 20px;">
@@ -6276,7 +6249,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const authRoot = document.getElementById('auth-root');
     const appRoot  = document.getElementById('app-root');
     if (authRoot) { authRoot.style.display = 'grid'; authRoot.style.visibility = 'visible'; }
-    if (appRoot)  { appRoot.style.display  = 'none'; }
+    if (appRoot)  { appRoot.style.display  = 'none'; appRoot.classList.remove('active') }
 
     // Warn if Railway URL not set
     if (API_BASE_URL.includes('YOUR-RAILWAY-URL')) {
