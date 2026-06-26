@@ -4,140 +4,383 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Fynlo — Business Management Platform</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='14' fill='%231B2845'/%3E%3Ctext x='50' y='68' font-family='Georgia,serif' font-size='58' font-weight='600' fill='%23C99A3C' text-anchor='middle'%3EF%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=Archivo:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    color: #1e293b;
-    background: #f8fafc;
+  :root {
+    --ink:        #16181D;
+    --ink-soft:   #4A4F5C;
+    --paper:      #FAF6EE;
+    --paper-dim:  #F0EADA;
+    --rule:       #DFD6BD;
+    --ledger:     #1B2845;
+    --ledger-2:   #28385E;
+    --rupee:      #2F6D4F;
+    --rupee-soft: #E7F0EA;
+    --stamp:      #B6432A;
+    --stamp-soft: #F7E6DF;
+    --gold:       #C99A3C;
+    --shadow:     0 1px 2px rgba(22,24,29,0.04), 0 8px 24px rgba(22,24,29,0.06);
+    --shadow-lg:  0 4px 8px rgba(22,24,29,0.06), 0 24px 48px rgba(22,24,29,0.12);
+    --ease:       cubic-bezier(0.4, 0, 0.2, 1);
   }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    font-family: 'Archivo', -apple-system, sans-serif;
+    color: var(--ink);
+    background: var(--paper);
+    -webkit-font-smoothing: antialiased;
+  }
+  .num, .figure { font-family: 'Fraunces', serif; font-feature-settings: "tnum"; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  ::selection { background: var(--gold); color: var(--ink); }
+  :focus-visible { outline: 2px solid var(--ledger); outline-offset: 2px; border-radius: 2px; }
+
+  /* refined scrollbar */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 6px; border: 2px solid var(--paper); }
+  ::-webkit-scrollbar-thumb:hover { background: #C9BD9C; }
+
+  button { font-family: inherit; }
+  button:active { transform: translateY(1px); }
+  a { color: inherit; }
 
   /* ============ AUTH SCREEN ============ */
   #auth-root {
     min-height: 100vh;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    background: var(--ledger);
+    position: relative;
+    overflow: hidden;
   }
-  .auth-card {
-    background: white;
-    border-radius: 16px;
-    padding: 40px;
+  #auth-root::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,0.035) 40px);
+    pointer-events: none;
+  }
+  .auth-stage {
+    display: flex;
     width: 100%;
-    max-width: 380px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+    max-width: 1040px;
+    margin: auto;
+    box-shadow: var(--shadow-lg);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+    animation: rise 0.5s var(--ease);
   }
-  .auth-card h1 {
-    font-size: 24px;
-    margin-bottom: 6px;
-    color: #4f46e5;
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .auth-stage { animation: none; } }
+  .auth-brand-panel {
+    flex: 1.1;
+    background: var(--ledger);
+    color: var(--paper);
+    padding: 56px 48px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    min-height: 560px;
   }
-  .auth-card p { color: #64748b; font-size: 13px; margin-bottom: 24px; }
-  .field { margin-bottom: 16px; }
-  .field label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+  .auth-brand-panel::after {
+    content: '';
+    position: absolute;
+    right: 0; top: 0; bottom: 0;
+    width: 1px;
+    background: rgba(250,246,238,0.12);
+  }
+  .brand-mark {
+    font-family: 'Fraunces', serif;
+    font-size: 30px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .brand-mark sup { font-size: 13px; color: var(--gold); font-weight: 500; margin-left: 6px; }
+  .ledger-quote {
+    font-family: 'Fraunces', serif;
+    font-size: 26px;
+    line-height: 1.35;
+    font-weight: 400;
+    max-width: 360px;
+  }
+  .ledger-quote em { font-style: italic; color: var(--gold); }
+  .auth-stat-row {
+    display: flex;
+    gap: 32px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(250,246,238,0.16);
+  }
+  .auth-stat-row div { flex: 1; }
+  .auth-stat-row .n { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 600; color: var(--gold); }
+  .auth-stat-row .l { font-size: 11px; color: rgba(250,246,238,0.6); margin-top: 2px; letter-spacing: 0.03em; text-transform: uppercase; }
+
+  .auth-form-panel {
+    flex: 1;
+    background: var(--paper);
+    padding: 56px 48px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .auth-eyebrow { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--rupee); font-weight: 700; margin-bottom: 10px; }
+  .auth-form-panel h1 { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 600; margin-bottom: 6px; }
+  .auth-form-panel > p { color: var(--ink-soft); font-size: 14px; margin-bottom: 28px; }
+
+  .field { margin-bottom: 18px; }
+  .field label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; color: var(--ink-soft); letter-spacing: 0.01em; }
   .field input {
     width: 100%;
-    padding: 10px 14px;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
+    padding: 11px 14px;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
     font-size: 14px;
+    font-family: inherit;
+    background: white;
+    transition: border-color 0.15s var(--ease), box-shadow 0.15s var(--ease);
   }
+  .field input:hover { border-color: #C9BD9C; }
+  .field input:focus { border-color: var(--ledger); outline: none; box-shadow: 0 0 0 3px rgba(27,40,69,0.08); }
+
   .btn {
     width: 100%;
-    padding: 12px;
+    padding: 13px;
     border: none;
-    border-radius: 8px;
-    background: #4f46e5;
-    color: white;
+    border-radius: 3px;
+    background: var(--ledger);
+    color: var(--paper);
     font-weight: 700;
     font-size: 14px;
+    font-family: inherit;
     cursor: pointer;
+    letter-spacing: 0.01em;
+    transition: background 0.15s var(--ease), transform 0.1s var(--ease);
   }
-  .btn:hover { background: #4338ca; }
-  .err { color: #ef4444; font-size: 12px; margin-top: 8px; min-height: 16px; }
+  .btn:hover { background: var(--ledger-2); }
+  .btn:active { transform: translateY(1px) scale(0.99); }
+  .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  .err { color: var(--stamp); font-size: 12px; margin-top: 10px; min-height: 16px; font-weight: 500; }
+
+  @media (max-width: 800px) {
+    .auth-stage { flex-direction: column; max-width: 440px; }
+    .auth-brand-panel { min-height: auto; padding: 36px 32px; }
+    .auth-form-panel { padding: 36px 32px; }
+    .ledger-quote { font-size: 20px; }
+  }
 
   /* ============ APP SHELL ============ */
-  /* NOTE: no display:none baked in here — JS controls visibility ONLY via this one class toggle */
   #app-root { display: none; }
   #app-root.show { display: block; }
 
   .topbar {
-    background: white;
-    border-bottom: 1px solid #e2e8f0;
-    padding: 14px 24px;
+    background: var(--paper);
+    border-bottom: 2px solid var(--ink);
+    padding: 16px 28px;
     display: flex;
     align-items: center;
     justify-content: space-between;
   }
-  .topbar .brand { font-weight: 800; font-size: 18px; color: #4f46e5; }
-  .topbar .right { display: flex; align-items: center; gap: 12px; }
+  .topbar .brand { font-family: 'Fraunces', serif; font-weight: 600; font-size: 19px; color: var(--ledger); }
+  .topbar .brand sup { font-size: 10px; color: var(--gold); margin-left: 4px; }
+  .topbar .right { display: flex; align-items: center; gap: 14px; }
+  .topbar .who { font-size: 13px; color: var(--ink-soft); }
+  .topbar .who strong { color: var(--ink); }
   .topbar button {
-    background: #f1f5f9;
-    border: none;
-    border-radius: 8px;
-    padding: 8px 14px;
-    font-size: 13px;
+    background: transparent;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 8px 16px;
+    font-size: 12px;
     font-weight: 600;
     cursor: pointer;
+    color: var(--ink);
+    font-family: inherit;
+    transition: all 0.15s;
   }
+  .topbar button:hover { border-color: var(--ink); background: var(--paper-dim); }
 
-  .layout {
-    display: flex;
-    min-height: calc(100vh - 57px);
-  }
+  .layout { display: flex; min-height: calc(100vh - 61px); }
   .sidebar {
-    width: 220px;
-    background: white;
-    border-right: 1px solid #e2e8f0;
-    padding: 16px 0;
+    width: 232px;
+    background: var(--paper);
+    border-right: 1px solid var(--rule);
+    padding: 20px 0;
     flex-shrink: 0;
   }
+  .sidebar .group-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-soft);
+    padding: 4px 24px;
+    margin-top: 18px;
+    margin-bottom: 4px;
+    font-weight: 700;
+  }
+  .sidebar .group-label:first-child { margin-top: 0; }
   .sidebar button {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 10px;
     width: 100%;
     text-align: left;
-    padding: 10px 20px;
+    padding: 10px 24px;
     background: none;
     border: none;
     font-size: 14px;
     cursor: pointer;
-    color: #475569;
+    color: var(--ink-soft);
+    font-family: inherit;
+    border-left: 3px solid transparent;
+    transition: background 0.12s var(--ease), color 0.12s var(--ease), border-color 0.12s var(--ease);
   }
-  .sidebar button:hover { background: #f1f5f9; }
-  .sidebar button.active { background: #ede9fe; color: #4f46e5; font-weight: 700; }
+  .sidebar button:hover { background: var(--paper-dim); color: var(--ink); }
+  .sidebar button.active { background: var(--rupee-soft); color: var(--rupee); font-weight: 700; border-left-color: var(--rupee); }
 
-  #page-content {
-    flex: 1;
-    padding: 28px;
-    overflow-y: auto;
-  }
+  #page-content { flex: 1; padding: 32px; overflow-y: auto; max-width: 1180px; animation: fadein 0.25s var(--ease); }
+  @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
 
-  .stat-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 16px;
-    margin-bottom: 24px;
-  }
-  .stat-card {
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 18px;
-  }
-  .stat-card .val { font-size: 24px; font-weight: 800; }
-  .stat-card .label { font-size: 12px; color: #64748b; margin-top: 4px; }
+  .ledger-rule { border: none; border-top: 1px dashed var(--rule); margin: 20px 0; }
+
+  /* ============ STAT CARDS — receipt/ledger style ============ */
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin-bottom: 28px; }
+  .stat-card { background: var(--paper); padding: 20px 22px; position: relative; transition: background 0.15s var(--ease); }
+  .stat-card:hover { background: var(--paper-dim); }
+  .stat-card .eyebrow { font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--ink-soft); font-weight: 700; margin-bottom: 8px; }
+  .stat-card .val { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 600; line-height: 1; }
+  .stat-card .val.accent { color: var(--rupee); }
+  .stat-card .delta { font-size: 11px; margin-top: 6px; font-weight: 600; }
+  .stat-card .delta.up { color: var(--rupee); }
+  .stat-card .delta.down { color: var(--stamp); }
 
   .card {
     background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 20px;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 24px;
   }
+  .card + .card { margin-top: 20px; }
+  .card-title { font-family: 'Fraunces', serif; font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+
+  /* ============ TABLES — ledger style ============ */
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th { text-align: left; padding: 10px 14px; background: var(--paper-dim); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-soft); font-weight: 700; border-bottom: 2px solid var(--ink); white-space: nowrap; }
+  td { padding: 12px 14px; border-bottom: 1px solid var(--rule); }
+  tr { transition: background 0.1s var(--ease); }
+  tr:hover td { background: var(--paper-dim); }
+  .table-wrap { overflow-x: auto; }
+  .num-cell { font-family: 'Fraunces', serif; font-weight: 600; }
+  .empty-row td { text-align: center; color: var(--ink-soft); padding: 36px 14px; font-size: 13px; }
+  .empty-row:hover td { background: transparent; }
+
+  /* ============ FORMS ============ */
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
+  .form-group { margin-bottom: 14px; }
+  .form-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; color: var(--ink-soft); }
+  .form-group input, .form-group select, .form-group textarea {
+    width: 100%; padding: 9px 13px; border: 1px solid var(--rule); border-radius: 3px; font-size: 13.5px; font-family: inherit; background: white;
+  }
+  .form-group input:focus, .form-group select:focus { border-color: var(--ledger); outline: none; }
+
+  /* ============ BUTTONS ============ */
+  .btn-sm { padding: 8px 16px; font-size: 12.5px; width: auto; display: inline-flex; align-items: center; gap: 6px; border-radius: 3px; }
+  .btn-primary { background: var(--ledger); color: var(--paper); }
+  .btn-primary:hover { background: var(--ledger-2); }
+  .btn-ghost { background: transparent; color: var(--ink); border: 1px solid var(--rule); }
+  .btn-ghost:hover { border-color: var(--ink); }
+  .btn-danger { background: var(--stamp-soft); color: var(--stamp); }
+  .btn-success { background: var(--rupee-soft); color: var(--rupee); }
+
+  /* ============ BADGES — wax-stamp inspired ============ */
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 11px; border-radius: 20px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; }
+  .badge-success { background: var(--rupee-soft); color: var(--rupee); }
+  .badge-warning { background: #FDF1DD; color: #92600A; }
+  .badge-danger  { background: var(--stamp-soft); color: var(--stamp); }
+  .badge-info    { background: #E7EEF7; color: var(--ledger); }
+  .badge-purple  { background: #F1E9F7; color: #6B3FA0; }
+
+  /* ============ MODAL ============ */
+  .modal-bg { display: none; position: fixed; inset: 0; background: rgba(22,24,29,0.45); align-items: center; justify-content: center; z-index: 500; padding: 16px; }
+  .modal-bg.open { display: flex; }
+  .modal { background: var(--paper); border-radius: 4px; padding: 28px; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-lg); position: relative; border-top: 4px solid var(--ledger); }
+  .modal h2 { font-family: 'Fraunces', serif; font-weight: 600; margin-bottom: 18px; font-size: 19px; padding-right: 24px; }
+  .modal-close { position: absolute; top: 20px; right: 20px; background: none; border: none; font-size: 20px; cursor: pointer; color: var(--ink-soft); line-height: 1; }
+  .modal-close:hover { color: var(--ink); }
+
+  /* ============ PAGE HEAD ============ */
+  .page-head { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; border-bottom: 2px solid var(--ink); padding-bottom: 14px; }
+  .page-head h2 { font-family: 'Fraunces', serif; font-size: 24px; font-weight: 600; }
+  .page-head .sub { font-size: 12.5px; color: var(--ink-soft); margin-top: 2px; }
+
+  /* ============ BILLING ============ */
+  .plan-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 28px; }
+  .plan-card { background: white; border: 1px solid var(--rule); border-radius: 4px; padding: 26px 22px; text-align: center; position: relative; }
+  .plan-card.current { border: 2px solid var(--rupee); background: var(--rupee-soft); }
+  .plan-card .plan-name { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; color: var(--ink-soft); }
+  .plan-card .price { font-family: 'Fraunces', serif; font-size: 34px; font-weight: 600; margin: 12px 0 16px; }
+  .plan-card .price span { font-size: 13px; color: var(--ink-soft); font-family: 'Archivo', sans-serif; }
+
+  /* empty state */
+  .empty-state { text-align: center; padding: 48px 24px; color: var(--ink-soft); }
+  .empty-state .glyph { font-family: 'Fraunces', serif; font-size: 32px; color: var(--rule); margin-bottom: 8px; }
+  .empty-state .glyph.danger { color: var(--stamp); }
 
   @media (max-width: 768px) {
-    .sidebar { display: none; }
-    #page-content { padding: 16px; }
+    .topbar { padding: 12px 16px; }
+    .topbar .who { display: none; }
+    .topbar .brand { font-size: 17px; }
+
+    .menu-btn { display: inline-flex; }
+
+    .sidebar {
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      width: 260px;
+      z-index: 600;
+      transform: translateX(-100%);
+      transition: transform 0.22s ease;
+      box-shadow: var(--shadow-lg);
+      overflow-y: auto;
+    }
+    .sidebar.open { transform: translateX(0); }
+
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(22,24,29,0.4);
+      z-index: 590;
+    }
+    .sidebar-overlay.open { display: block; }
+
+    #page-content { padding: 18px; max-width: 100%; }
+    .page-head h2 { font-size: 20px; }
+    .stat-grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+    .stat-card .val { font-size: 22px; }
+    .auth-form-panel, .auth-brand-panel { padding: 32px 24px; }
+  }
+
+  .menu-btn {
+    display: none;
+    background: transparent;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    width: 36px;
+    height: 36px;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    color: var(--ink);
+    margin-right: 4px;
   }
 </style>
 </head>
@@ -145,34 +388,130 @@
 
 <!-- ══════════════ AUTH SCREEN ══════════════ -->
 <div id="auth-root">
-  <div class="auth-card">
-    <h1>Fynlo</h1>
-    <p>Sign in to your account</p>
-    <div class="field">
-      <label>Email</label>
-      <input type="email" id="login-email" placeholder="you@company.com">
+  <div class="auth-stage">
+    <div class="auth-brand-panel">
+      <div>
+        <div class="brand-mark">Fynlo<sup>™</sup></div>
+      </div>
+      <div class="ledger-quote">
+        Every sale, every shift,<br>
+        <em>every rupee</em> — accounted for.
+      </div>
+      <div class="auth-stat-row">
+        <div><div class="n">10k+</div><div class="l">Invoices Raised</div></div>
+        <div><div class="n">₹2.4Cr</div><div class="l">Tracked Monthly</div></div>
+        <div><div class="n">340+</div><div class="l">Shops Onboard</div></div>
+      </div>
     </div>
-    <div class="field">
-      <label>Password</label>
-      <input type="password" id="login-password" placeholder="••••••••">
+    <div class="auth-form-panel">
+      <div class="auth-eyebrow">Welcome back</div>
+      <h1>Sign in to your ledger</h1>
+      <p>Pick up right where you left the books.</p>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="login-email" placeholder="you@yourshop.com">
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="••••••••">
+      </div>
+      <button class="btn" id="login-btn">Sign in</button>
+      <div class="err" id="login-err"></div>
     </div>
-    <button class="btn" id="login-btn">Sign In</button>
-    <div class="err" id="login-err"></div>
   </div>
 </div>
 
 <!-- ══════════════ APP SHELL ══════════════ -->
 <div id="app-root">
   <div class="topbar">
-    <div class="brand">Fynlo</div>
+    <div style="display:flex;align-items:center;">
+      <button class="menu-btn" id="menu-btn" aria-label="Open menu">☰</button>
+      <div class="brand">Fynlo<sup>™</sup></div>
+    </div>
     <div class="right">
-      <span id="user-name-label"></span>
-      <button id="logout-btn">Logout</button>
+      <span class="who" id="user-name-label"></span>
+      <button id="logout-btn">Sign out</button>
     </div>
   </div>
   <div class="layout">
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
     <div class="sidebar" id="sidebar-nav"></div>
     <div id="page-content"></div>
+  </div>
+</div>
+
+<!-- ══════════════ MODALS ══════════════ -->
+<div class="modal-bg" id="modal-add-product">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('add-product')">×</button>
+    <h2>Add Product</h2>
+    <div class="form-row">
+      <div class="form-group"><label>SKU</label><input id="prod-sku"></div>
+      <div class="form-group"><label>Name *</label><input id="prod-name"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Category</label><input id="prod-category"></div>
+      <div class="form-group"><label>Price (₹) *</label><input id="prod-price" type="number"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Cost</label><input id="prod-cost" type="number"></div>
+      <div class="form-group"><label>Stock Qty</label><input id="prod-stock" type="number"></div>
+    </div>
+    <button class="btn btn-primary" onclick="saveProduct()">Save Product</button>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-add-employee">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('add-employee')">×</button>
+    <h2>Add Employee</h2>
+    <div class="form-row">
+      <div class="form-group"><label>Name *</label><input id="emp-name"></div>
+      <div class="form-group"><label>Position *</label><input id="emp-position"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Email</label><input id="emp-email" type="email"></div>
+      <div class="form-group"><label>Phone</label><input id="emp-phone"></div>
+    </div>
+    <div class="form-group"><label>Monthly Salary (₹)</label><input id="emp-salary" type="number"></div>
+    <button class="btn btn-primary" onclick="saveEmployee()">Save Employee</button>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-create-invoice">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('create-invoice')">×</button>
+    <h2>Create Invoice</h2>
+    <div class="form-row">
+      <div class="form-group"><label>Customer Name *</label><input id="inv-customer"></div>
+      <div class="form-group"><label>Customer Email</label><input id="inv-email" type="email"></div>
+    </div>
+    <div class="form-group"><label>Item Name *</label><input id="inv-item-name" placeholder="Product or service"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Quantity</label><input id="inv-qty" type="number" value="1"></div>
+      <div class="form-group"><label>Unit Price (₹)</label><input id="inv-price" type="number"></div>
+    </div>
+    <button class="btn btn-primary" onclick="saveInvoice()">Generate Invoice</button>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-mark-attendance">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('mark-attendance')">×</button>
+    <h2>Mark Attendance</h2>
+    <div class="form-group"><label>Employee</label><select id="att-employee"></select></div>
+    <div class="form-row">
+      <div class="form-group"><label>Date</label><input id="att-date" type="date"></div>
+      <div class="form-group"><label>Status</label>
+        <select id="att-status">
+          <option value="present">Present</option>
+          <option value="absent">Absent</option>
+          <option value="late">Late</option>
+          <option value="leave">Leave</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="saveAttendance()">Save</button>
   </div>
 </div>
 
@@ -265,46 +604,497 @@ document.getElementById('logout-btn').addEventListener('click', () => {
 // ════════════════════════════════════════════════════════
 function buildSidebar(user) {
   const isAdmin = user.role === 'admin';
-  const pages = isAdmin
-    ? [['dashboard','Dashboard'], ['businesses','Businesses']]
-    : [['dashboard','Dashboard'], ['inventory','Inventory'], ['invoices','Invoices']];
+  const groups = isAdmin
+    ? [
+        { label: 'Overview', items: [['dashboard','◆ Dashboard'], ['analytics','▤ Analytics']] },
+        { label: 'Platform', items: [['businesses','⌂ Businesses'], ['all-products','▦ All Products'], ['all-invoices','▧ All Invoices']] },
+        { label: 'Account', items: [['billing','✦ Billing']] },
+      ]
+    : [
+        { label: 'Overview', items: [['dashboard','◆ Dashboard']] },
+        { label: 'Operations', items: [['inventory','▦ Inventory'], ['invoices','▧ Invoices']] },
+        { label: 'People', items: [['employees','⌂ Employees'], ['attendance','◷ Attendance'], ['payroll','✓ Payroll']] },
+        { label: 'Account', items: [['profile','✎ My Shop'], ['billing','✦ Billing']] },
+      ];
 
   const nav = document.getElementById('sidebar-nav');
-  nav.innerHTML = pages.map(([id, label]) =>
-    `<button data-page="${id}" onclick="loadPage('${id}')">${label}</button>`
-  ).join('');
+  nav.innerHTML = groups.map(g => `
+    <div class="group-label">${g.label}</div>
+    ${g.items.map(([id, label]) => `<button data-page="${id}" onclick="loadPage('${id}')">${label}</button>`).join('')}
+  `).join('');
 }
 
 // ════════════════════════════════════════════════════════
-// PAGE LOADER
+// MOBILE SIDEBAR TOGGLE
+// ════════════════════════════════════════════════════════
+function openSidebar() {
+  document.getElementById('sidebar-nav').classList.add('open');
+  document.getElementById('sidebar-overlay').classList.add('open');
+}
+function closeSidebar() {
+  document.getElementById('sidebar-nav').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('open');
+}
+document.getElementById('menu-btn').addEventListener('click', openSidebar);
+document.getElementById('sidebar-overlay').addEventListener('click', closeSidebar);
+
+// ════════════════════════════════════════════════════════
+// MODAL HELPERS
+// ════════════════════════════════════════════════════════
+function openModal(name) { document.getElementById('modal-' + name).classList.add('open'); }
+function closeModal(name) { document.getElementById('modal-' + name).classList.remove('open'); }
+
+// ════════════════════════════════════════════════════════
+// PAGE ROUTER
 // ════════════════════════════════════════════════════════
 async function loadPage(page) {
   document.querySelectorAll('.sidebar button').forEach(b => b.classList.remove('active'));
   const activeBtn = document.querySelector(`.sidebar button[data-page="${page}"]`);
   if (activeBtn) activeBtn.classList.add('active');
+  closeSidebar(); // auto-close drawer on mobile after picking a page
 
   const el = document.getElementById('page-content');
-  el.innerHTML = '<p style="padding:20px;color:#94a3b8;">Loading...</p>';
+  el.innerHTML = '<div class="empty-state"><div class="glyph">⋯</div>Turning the page</div>';
+
+  const user = Auth.getUser();
+  if (!user) { showAuth(); return; }
 
   try {
-    if (page === 'dashboard') {
-      const stats = await GET('/dashboard').catch(() => ({}));
-      el.innerHTML = `
-        <h2 style="margin-bottom:20px;">Dashboard</h2>
-        <div class="stat-grid">
-          <div class="stat-card"><div class="val">₹${(stats.todaysSales||0).toLocaleString()}</div><div class="label">Today's Sales</div></div>
-          <div class="stat-card"><div class="val">${stats.activeProducts||0}</div><div class="label">Active Products</div></div>
-          <div class="stat-card"><div class="val">${stats.staffCount||0}</div><div class="label">Staff</div></div>
-        </div>
-        <div class="card">
-          <p>If you can see this box with a border, the core app shell is rendering correctly. ✅</p>
-        </div>`;
-    } else {
-      el.innerHTML = `<div class="card"><p>${page} page — to be built.</p></div>`;
-    }
+    if (page === 'dashboard' && user.role === 'admin') return renderAdminDashboard();
+    if (page === 'dashboard') return renderShopDashboard();
+    if (page === 'businesses') return renderBusinesses();
+    if (page === 'all-products') return renderAllProducts();
+    if (page === 'all-invoices') return renderAllInvoices();
+    if (page === 'analytics') return renderAnalytics();
+    if (page === 'billing') return renderBilling();
+    if (page === 'inventory') return renderInventory();
+    if (page === 'invoices') return renderInvoices();
+    if (page === 'employees') return renderEmployees();
+    if (page === 'attendance') return renderAttendance();
+    if (page === 'payroll') return renderPayroll();
+    if (page === 'profile') return renderProfile();
+    el.innerHTML = `<div class="card"><div class="empty-state"><div class="glyph">?</div>That page doesn't exist yet.</div></div>`;
   } catch (err) {
-    el.innerHTML = `<div class="card"><p style="color:#ef4444;">Failed to load: ${err.message}</p></div>`;
+    console.error('Page load error:', err);
+    el.innerHTML = `<div class="card"><div class="empty-state"><div class="glyph danger">!</div>Something went wrong: ${err.message}</div></div>`;
   }
+}
+
+// ════════════════════════════════════════════════════════
+// BUSINESS — DASHBOARD
+// ════════════════════════════════════════════════════════
+async function renderShopDashboard() {
+  const el = document.getElementById('page-content');
+  const user = Auth.getUser();
+  const stats = await GET('/dashboard').catch(() => ({}));
+  el.innerHTML = `
+    <div class="page-head">
+      <div><h2>Good day, ${(user.name||'there').split(' ')[0]}</h2><div class="sub">Here's where the books stand today.</div></div>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="eyebrow">Today's Sales</div><div class="val accent">₹${(stats.todaysSales||0).toLocaleString('en-IN')}</div></div>
+      <div class="stat-card"><div class="eyebrow">Active Products</div><div class="val">${stats.activeProducts||0}</div></div>
+      <div class="stat-card"><div class="eyebrow">Staff on Roll</div><div class="val">${stats.staffCount||0}</div></div>
+      <div class="stat-card"><div class="eyebrow">Pending Invoices</div><div class="val">${stats.pendingInvoices||0}</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Getting started</div>
+      <p style="font-size:13.5px;color:var(--ink-soft);line-height:1.7;">Use the ledger on the left to add stock, raise invoices, and keep your staff's attendance and pay in order — all in one place.</p>
+    </div>`;
+}
+
+// ════════════════════════════════════════════════════════
+// BUSINESS — INVENTORY
+// ════════════════════════════════════════════════════════
+async function renderInventory() {
+  const el = document.getElementById('page-content');
+  const products = await GET('/products').catch(() => []);
+  el.innerHTML = `
+    <div class="page-head">
+      <div><h2>Inventory</h2><div class="sub">${products.length} item${products.length===1?'':'s'} on the shelf</div></div>
+      <button class="btn btn-primary btn-sm" onclick="openModal('add-product')">+ Add product</button>
+    </div>
+    <div class="card table-wrap">
+      <table>
+        <thead><tr><th>SKU</th><th>Name</th><th>Category</th><th>Price</th><th>In stock</th></tr></thead>
+        <tbody>
+          ${products.length ? products.map(p => `
+            <tr>
+              <td class="mono" style="font-size:12px;color:var(--ink-soft);">${p.sku||'—'}</td>
+              <td style="font-weight:600;">${p.name}</td>
+              <td>${p.category||'—'}</td>
+              <td class="num-cell">₹${parseFloat(p.price||0).toLocaleString('en-IN')}</td>
+              <td><span class="badge ${p.stock_quantity<=5?'badge-danger':'badge-success'}">${p.stock_quantity} units</span></td>
+            </tr>`).join('') : `<tr class="empty-row"><td colspan="5"><div class="empty-state"><div class="glyph">∅</div>The shelf is empty — add your first product.</div></td></tr>`}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+async function saveProduct() {
+  const body = {
+    sku: document.getElementById('prod-sku').value.trim(),
+    name: document.getElementById('prod-name').value.trim(),
+    category: document.getElementById('prod-category').value.trim(),
+    price: parseFloat(document.getElementById('prod-price').value) || 0,
+    cost: parseFloat(document.getElementById('prod-cost').value) || 0,
+    stock_quantity: parseInt(document.getElementById('prod-stock').value) || 0,
+  };
+  if (!body.name || !body.price) { alert('Name and price are required'); return; }
+  try {
+    await POST('/products', body);
+    closeModal('add-product');
+    renderInventory();
+  } catch (err) { alert(err.message); }
+}
+
+// ════════════════════════════════════════════════════════
+// BUSINESS — INVOICES
+// ════════════════════════════════════════════════════════
+async function renderInvoices() {
+  const el = document.getElementById('page-content');
+  const invoices = await GET('/invoices').catch(() => []);
+  const outstanding = invoices.filter(i => i.payment_status !== 'paid').length;
+  el.innerHTML = `
+    <div class="page-head">
+      <div><h2>Invoices</h2><div class="sub">${invoices.length} raised · ${outstanding} awaiting payment</div></div>
+      <button class="btn btn-primary btn-sm" onclick="openModal('create-invoice')">+ New invoice</button>
+    </div>
+    <div class="card table-wrap">
+      <table>
+        <thead><tr><th>Invoice #</th><th>Customer</th><th>Amount</th><th>Status</th></tr></thead>
+        <tbody>
+          ${invoices.length ? invoices.map(i => `
+            <tr>
+              <td class="mono" style="font-size:12px;color:var(--ink-soft);">${i.invoice_number}</td>
+              <td style="font-weight:600;">${i.customer_name}</td>
+              <td class="num-cell">₹${parseFloat(i.total_amount||0).toLocaleString('en-IN')}</td>
+              <td><span class="badge ${i.payment_status==='paid'?'badge-success':'badge-warning'}">${i.payment_status}</span></td>
+            </tr>`).join('') : `<tr class="empty-row"><td colspan="4"><div class="empty-state"><div class="glyph">∅</div>No invoices raised yet — create your first one.</div></td></tr>`}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+async function saveInvoice() {
+  const customer_name = document.getElementById('inv-customer').value.trim();
+  const customer_email = document.getElementById('inv-email').value.trim();
+  const item_name = document.getElementById('inv-item-name').value.trim();
+  const quantity = parseInt(document.getElementById('inv-qty').value) || 1;
+  const unit_price = parseFloat(document.getElementById('inv-price').value) || 0;
+  if (!customer_name || !item_name || !unit_price) { alert('Customer name, item name, and price are required'); return; }
+  try {
+    await POST('/invoices', {
+      customer_name, customer_email,
+      items: [{ item_name, quantity, unit_price }],
+    });
+    closeModal('create-invoice');
+    renderInvoices();
+  } catch (err) { alert(err.message); }
+}
+
+// ════════════════════════════════════════════════════════
+// BUSINESS — EMPLOYEES
+// ════════════════════════════════════════════════════════
+async function renderEmployees() {
+  const el = document.getElementById('page-content');
+  const employees = await GET('/employees').catch(() => []);
+  el.innerHTML = `
+    <div class="page-head">
+      <div><h2>Employees</h2><div class="sub">${employees.length} on the team</div></div>
+      <button class="btn btn-primary btn-sm" onclick="openModal('add-employee')">+ Add employee</button>
+    </div>
+    <div class="card table-wrap">
+      <table>
+        <thead><tr><th>Name</th><th>Position</th><th>Phone</th><th>Monthly salary</th></tr></thead>
+        <tbody>
+          ${employees.length ? employees.map(e => `
+            <tr>
+              <td style="font-weight:600;">${e.name}</td>
+              <td>${e.position}</td>
+              <td class="mono" style="font-size:12px;color:var(--ink-soft);">${e.phone||'—'}</td>
+              <td class="num-cell">₹${parseFloat(e.salary||0).toLocaleString('en-IN')}</td>
+            </tr>`).join('') : `<tr class="empty-row"><td colspan="4"><div class="empty-state"><div class="glyph">∅</div>No one on the books yet — add your first employee.</div></td></tr>`}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+async function saveEmployee() {
+  const body = {
+    name: document.getElementById('emp-name').value.trim(),
+    position: document.getElementById('emp-position').value.trim(),
+    email: document.getElementById('emp-email').value.trim(),
+    phone: document.getElementById('emp-phone').value.trim(),
+    salary: parseFloat(document.getElementById('emp-salary').value) || 0,
+  };
+  if (!body.name || !body.position) { alert('Name and position are required'); return; }
+  try {
+    await POST('/employees', body);
+    closeModal('add-employee');
+    renderEmployees();
+  } catch (err) { alert(err.message); }
+}
+
+// ════════════════════════════════════════════════════════
+// BUSINESS — ATTENDANCE
+// ════════════════════════════════════════════════════════
+async function renderAttendance() {
+  const el = document.getElementById('page-content');
+  const [records, employees] = await Promise.all([
+    GET('/attendance').catch(() => []),
+    GET('/employees').catch(() => []),
+  ]);
+
+  const sel = document.getElementById('att-employee');
+  sel.innerHTML = employees.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
+  document.getElementById('att-date').value = new Date().toISOString().slice(0,10);
+
+  el.innerHTML = `
+    <div class="page-head">
+      <div><h2>Attendance</h2><div class="sub">${records.length} entr${records.length===1?'y':'ies'} on record</div></div>
+      <button class="btn btn-primary btn-sm" onclick="openModal('mark-attendance')">+ Mark attendance</button>
+    </div>
+    <div class="card table-wrap">
+      <table>
+        <thead><tr><th>Employee</th><th>Date</th><th>Status</th></tr></thead>
+        <tbody>
+          ${records.length ? records.map(r => `
+            <tr>
+              <td style="font-weight:600;">${r.employee_name}</td>
+              <td class="mono" style="font-size:12px;color:var(--ink-soft);">${r.attendance_date}</td>
+              <td><span class="badge ${r.status==='present'?'badge-success':r.status==='absent'?'badge-danger':'badge-warning'}">${r.status}</span></td>
+            </tr>`).join('') : `<tr class="empty-row"><td colspan="3"><div class="empty-state"><div class="glyph">∅</div>No attendance marked yet today.</div></td></tr>`}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+async function saveAttendance() {
+  const body = {
+    employee_id: document.getElementById('att-employee').value,
+    attendance_date: document.getElementById('att-date').value,
+    status: document.getElementById('att-status').value,
+  };
+  try {
+    await POST('/attendance', body);
+    closeModal('mark-attendance');
+    renderAttendance();
+  } catch (err) { alert(err.message); }
+}
+
+// ════════════════════════════════════════════════════════
+// BUSINESS — PAYROLL
+// ════════════════════════════════════════════════════════
+async function renderPayroll() {
+  const el = document.getElementById('page-content');
+  const month = new Date().toISOString().slice(0,7);
+  const monthLabel = new Date(month + '-01').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+  const payroll = await GET(`/payroll?month=${month}`).catch(() => []);
+  el.innerHTML = `
+    <div class="page-head">
+      <div><h2>Payroll</h2><div class="sub">${monthLabel}</div></div>
+      <button class="btn btn-primary btn-sm" onclick="generatePayroll()">Generate this month</button>
+    </div>
+    <div class="card table-wrap">
+      <table>
+        <thead><tr><th>Employee</th><th>Base salary</th><th>Net salary</th><th>Status</th></tr></thead>
+        <tbody>
+          ${payroll.length ? payroll.map(p => `
+            <tr>
+              <td style="font-weight:600;">${p.employee_name}</td>
+              <td class="num-cell">₹${parseFloat(p.base_salary||0).toLocaleString('en-IN')}</td>
+              <td class="num-cell">₹${parseFloat(p.net_salary||0).toLocaleString('en-IN')}</td>
+              <td><span class="badge ${p.payment_status==='paid'?'badge-success':'badge-warning'}">${p.payment_status}</span></td>
+            </tr>`).join('') : `<tr class="empty-row"><td colspan="4"><div class="empty-state"><div class="glyph">∅</div>No payroll run for ${monthLabel} yet.</div></td></tr>`}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+async function generatePayroll() {
+  const month = new Date().toISOString().slice(0,7) + '-01';
+  try {
+    await POST('/payroll/generate', { month });
+    renderPayroll();
+  } catch (err) { alert(err.message); }
+}
+
+// ════════════════════════════════════════════════════════
+// BUSINESS — PROFILE
+// ════════════════════════════════════════════════════════
+async function renderProfile() {
+  const el = document.getElementById('page-content');
+  const profile = await GET('/profile').catch(() => ({}));
+  const biz = profile.business || {};
+  el.innerHTML = `
+    <div class="page-head">
+      <div><h2>My Shop</h2><div class="sub">Your business, on record</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Shop details</div>
+      <table>
+        <tbody>
+          <tr><td style="color:var(--ink-soft);width:160px;">Shop name</td><td style="font-weight:600;">${biz.shop_name||'—'}</td></tr>
+          <tr><td style="color:var(--ink-soft);">Category</td><td>${biz.category||'—'}</td></tr>
+          <tr><td style="color:var(--ink-soft);">City</td><td>${biz.city||'—'}</td></tr>
+          <tr><td style="color:var(--ink-soft);">Current plan</td><td><span class="badge badge-purple">${biz.subscription_plan||'Free'}</span></td></tr>
+        </tbody>
+      </table>
+    </div>`;
+}
+
+// ════════════════════════════════════════════════════════
+// ADMIN — DASHBOARD
+// ════════════════════════════════════════════════════════
+async function renderAdminDashboard() {
+  const el = document.getElementById('page-content');
+  const user = Auth.getUser();
+  const stats = await GET('/admin/dashboard').catch(() => ({}));
+  el.innerHTML = `
+    <div class="page-head">
+      <div><h2>Good day, ${(user.name||'there').split(' ')[0]}</h2><div class="sub">The whole ledger, at a glance.</div></div>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="eyebrow">Total businesses</div><div class="val">${stats.totalBusinesses||0}</div></div>
+      <div class="stat-card"><div class="eyebrow">Active</div><div class="val">${stats.activeBusinesses||0}</div></div>
+      <div class="stat-card"><div class="eyebrow">Platform revenue</div><div class="val accent">₹${(stats.platformRevenue||0).toLocaleString('en-IN')}</div></div>
+      <div class="stat-card"><div class="eyebrow">Total invoices</div><div class="val">${stats.totalInvoices||0}</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Getting started</div>
+      <p style="font-size:13.5px;color:var(--ink-soft);line-height:1.7;">Review every registered business, audit their stock and invoices, and keep an eye on platform-wide billing from the ledger on the left.</p>
+    </div>`;
+}
+
+// ════════════════════════════════════════════════════════
+// ADMIN — BUSINESSES LIST
+// ════════════════════════════════════════════════════════
+async function renderBusinesses() {
+  const el = document.getElementById('page-content');
+  const businesses = await GET('/businesses').catch(() => []);
+  el.innerHTML = `
+    <div class="page-head">
+      <div><h2>Businesses</h2><div class="sub">${businesses.length} shop${businesses.length===1?'':'s'} on the platform</div></div>
+    </div>
+    <div class="card table-wrap">
+      <table>
+        <thead><tr><th>Shop</th><th>Owner</th><th>City</th><th>Plan</th><th>Status</th></tr></thead>
+        <tbody>
+          ${businesses.length ? businesses.map(b => `
+            <tr>
+              <td style="font-weight:600;">${b.shop_name}</td>
+              <td class="mono" style="font-size:12px;color:var(--ink-soft);">${b.owner_email||'—'}</td>
+              <td>${b.city||'—'}</td>
+              <td><span class="badge badge-purple">${b.subscription_plan||'Free'}</span></td>
+              <td><span class="badge ${b.status==='active'?'badge-success':'badge-danger'}">${b.status}</span></td>
+            </tr>`).join('') : `<tr class="empty-row"><td colspan="5"><div class="empty-state"><div class="glyph">∅</div>No businesses registered yet.</div></td></tr>`}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+// ════════════════════════════════════════════════════════
+// ADMIN — ALL PRODUCTS / ALL INVOICES
+// ════════════════════════════════════════════════════════
+async function renderAllProducts() {
+  const el = document.getElementById('page-content');
+  const products = await GET('/admin/products').catch(() => []);
+  el.innerHTML = `
+    <div class="page-head">
+      <div><h2>All Products</h2><div class="sub">Across every shop on the platform</div></div>
+    </div>
+    <div class="card table-wrap">
+      <table>
+        <thead><tr><th>Business</th><th>Name</th><th>Price</th><th>Stock</th></tr></thead>
+        <tbody>
+          ${products.length ? products.map(p => `
+            <tr>
+              <td style="color:var(--ink-soft);">${p.shop_name}</td>
+              <td style="font-weight:600;">${p.name}</td>
+              <td class="num-cell">₹${parseFloat(p.price||0).toLocaleString('en-IN')}</td>
+              <td><span class="badge ${p.stock_quantity<=5?'badge-danger':'badge-success'}">${p.stock_quantity} units</span></td>
+            </tr>`).join('')
+            : `<tr class="empty-row"><td colspan="4"><div class="empty-state"><div class="glyph">∅</div>No products listed on the platform yet.</div></td></tr>`}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+async function renderAllInvoices() {
+  const el = document.getElementById('page-content');
+  const invoices = await GET('/admin/invoices').catch(() => []);
+  el.innerHTML = `
+    <div class="page-head">
+      <div><h2>All Invoices</h2><div class="sub">Across every shop on the platform</div></div>
+    </div>
+    <div class="card table-wrap">
+      <table>
+        <thead><tr><th>Business</th><th>Invoice #</th><th>Customer</th><th>Amount</th><th>Status</th></tr></thead>
+        <tbody>
+          ${invoices.length ? invoices.map(i => `
+            <tr>
+              <td style="color:var(--ink-soft);">${i.shop_name}</td>
+              <td class="mono" style="font-size:12px;color:var(--ink-soft);">${i.invoice_number}</td>
+              <td style="font-weight:600;">${i.customer_name}</td>
+              <td class="num-cell">₹${parseFloat(i.total_amount||0).toLocaleString('en-IN')}</td>
+              <td><span class="badge ${i.payment_status==='paid'?'badge-success':'badge-warning'}">${i.payment_status}</span></td>
+            </tr>`).join('')
+            : `<tr class="empty-row"><td colspan="5"><div class="empty-state"><div class="glyph">∅</div>No invoices raised on the platform yet.</div></td></tr>`}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+// ════════════════════════════════════════════════════════
+// ADMIN — ANALYTICS
+// ════════════════════════════════════════════════════════
+async function renderAnalytics() {
+  const el = document.getElementById('page-content');
+  const stats = await GET('/admin/dashboard').catch(() => ({}));
+  el.innerHTML = `
+    <div class="page-head">
+      <div><h2>Analytics</h2><div class="sub">Platform performance, at a glance</div></div>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="eyebrow">Platform revenue</div><div class="val accent">₹${(stats.platformRevenue||0).toLocaleString('en-IN')}</div></div>
+      <div class="stat-card"><div class="eyebrow">Total employees</div><div class="val">${stats.totalEmployees||0}</div></div>
+      <div class="stat-card"><div class="eyebrow">Total businesses</div><div class="val">${stats.totalBusinesses||0}</div></div>
+      <div class="stat-card"><div class="eyebrow">Total invoices</div><div class="val">${stats.totalInvoices||0}</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">A note on these figures</div>
+      <p style="font-size:13.5px;color:var(--ink-soft);line-height:1.7;">These numbers roll up every business on the platform — revenue collected, staff employed, and invoices raised, all in one ledger.</p>
+    </div>`;
+}
+
+// ════════════════════════════════════════════════════════
+// BILLING (shared by both admin and business)
+// ════════════════════════════════════════════════════════
+async function renderBilling() {
+  const el = document.getElementById('page-content');
+  const sub = await GET('/subscription').catch(() => ({ plan_name: 'Free', price: 0 }));
+  const plans = [
+    { name: 'Free', price: 0, note: 'For trying things out' },
+    { name: 'Starter', price: 499, note: 'For one shop, getting going' },
+    { name: 'Professional', price: 1299, note: 'For a growing team' },
+    { name: 'Enterprise', price: 2499, note: 'For multi-shop operations' },
+  ];
+  el.innerHTML = `
+    <div class="page-head">
+      <div><h2>Billing</h2><div class="sub">Currently on the <strong>${sub.plan_name||'Free'}</strong> plan</div></div>
+    </div>
+    <div class="plan-grid">
+      ${plans.map(p => `
+        <div class="plan-card ${p.name===sub.plan_name?'current':''}">
+          <div class="plan-name">${p.name}</div>
+          <div class="price">₹${p.price}<span>/mo</span></div>
+          <p style="font-size:12.5px;color:var(--ink-soft);margin-bottom:16px;">${p.note}</p>
+          ${p.name===sub.plan_name
+            ? '<span class="badge badge-success">Current plan</span>'
+            : `<button class="btn btn-primary btn-sm" style="width:100%;justify-content:center;" onclick="alert('Razorpay checkout would open here for ${p.name}')">Choose ${p.name}</button>`}
+        </div>`).join('')}
+    </div>`;
 }
 
 // ════════════════════════════════════════════════════════
